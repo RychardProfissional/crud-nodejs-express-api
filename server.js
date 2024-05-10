@@ -1,13 +1,13 @@
-express = require('express')
+const express = require('express')
+const bodyParser = require('body-parser')
+const produtos = require('./routes/produtos')
 
-app = express()
+const app = express()
 
-app.get('/', (req, res, next) => {
-    res.status(200).json({
-        hello: "hello world!!!"
-    })
-})
+app.use(bodyParser.json({ type: 'application/json' }))
 
-app.listen(3000, () => {
+app.use('/produtos', produtos)
+
+app.listen(3001, () => {
     console.log('servidor no ar')
 })
