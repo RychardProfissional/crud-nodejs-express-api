@@ -21,8 +21,9 @@ router.get('/', (req, res, next) => {
 })
 
 router.post('/', (req, res, next) => {
-    const {id, description} = res.body
-    if (!id || !description) {
+    const {descricao, preco} = req.body
+    
+    if (!descricao, !preco) {
         res.status(400).json({
             error: { message: 'Erro nos dados passados para a API'}
         })
@@ -37,10 +38,10 @@ router.post('/', (req, res, next) => {
             return
         }
         
-        conn.query("INSERT INTO `produtos` VALUES (?, ?)", [id, description], (qErr, results) => {
+        conn.query("INSERT INTO `produtos` (descricao, preco) VALUES (?, ?)", [descricao, preco], (qErr, results) => {
             if (qErr) {
                 res.status(500).json({
-                    error: {message: 'Erro ao tentar incerrir valor no banco de dados'}
+                    error: {message: qErr.sqlMessage}
                 })
                 return
             }

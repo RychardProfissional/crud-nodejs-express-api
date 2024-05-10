@@ -4,7 +4,7 @@ const produtos = require('./routes/produtos')
 
 const app = express()
 
-app.use(bodyParser.json({ type: 'application/json' }))
+app.use(bodyParser.json({ "Content-Type": 'application/json' }))
 
 app.use('/produtos', produtos)
 

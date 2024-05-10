@@ -2,7 +2,10 @@ CREATE DATABASE IF NOT EXISTS  `loja`;
 
 USE `loja`;
 
-CREATE TABLE IF NOT EXISTS `produtos` (
-    `id` INT PRIMARY KEY NOT NULL,
-    `descricao` TEXT NOT NULL
+DROP TABLE `produtos`; -- para execução em desenvolvimento
+
+CREATE TABLE `produtos` (
+    `id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    `descricao` TEXT NOT NULL,
+    `preco` FLOAT(10, 2) NOT NULL
 );

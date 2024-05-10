@@ -4,7 +4,7 @@
   "description": "Um crud utilizando nodejs no backend",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Rychard Antony Pereira de Arruda",
@@ -13,5 +13,8 @@
     "body-parser": "^1.20.2",
     "express": "^4.19.2",
     "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
