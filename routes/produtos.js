@@ -1,12 +1,15 @@
+require('dotenv').config()
+
 const express = require('express')
 const mysql = require('mysql')
 const router = express.Router()
+const server_url = process.env.SERVER_URL
 
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'loja'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
 })
 
 router.get('/', (req, res, next) => {
@@ -23,15 +26,33 @@ router.get('/', (req, res, next) => {
                 res.status(500).json({
                     error: {message: qErr.sqlMessage}
                 })
+                return
             }
-            else if (!result.length) {
+
+            if (!result.length) {
                 res.status(404).json({
                     error: {message: "Não existe produtos no banco de dados"}
                 })
+                return
             }
-            else {
-                res.status(200).json({Produtos: result})
+
+            const response = {
+                quantidade: result.length,
+                produtos: result.map(e => {
+                    return {
+                        id: e.id,
+                        descricao: e.descricao,
+                        preco: e.preco,
+                        request: {
+                            tipo: "GET",
+                            descricao: "Retorna todos os produtos",
+                            url: `${server_url}/produtos/${e.id}`
+                        }
+                    }
+                })
             }
+
+            res.status(200).json(response)
         })
 
         conn.release()
@@ -55,20 +76,30 @@ router.get('/:id_produto', (req, res, next) => {
             return
         }
         
-        conn.query("SELECT descricao, preco FROM `produtos` WHERE `id` = ? LIMIT 1", [idProduto], (qErr, result) => {
+        conn.query("SELECT id, descricao, preco FROM `produtos` WHERE `id` = ? LIMIT 1", [idProduto], (qErr, result) => {
             if (qErr) {
                 res.status(500).json({
                     error: {message: qErr.sqlMessage}
                 })
+                return
             } 
-            else if (!result.length) {
+
+            if (!result.length) {
                 res.status(404).json({
                     error: {message: "Produto não encontrado"}
                 })
+                return
             }
-            else {
-                res.status(200).json({...result[0]})
+
+            const response = {
+                ...result[0],
+                request: {
+                    tipe: "GET",
+                    descricao: "Retornar um produto especifico"
+                }
             }
+
+            res.status(200).json(response)
         })
         conn.release()
     })
@@ -97,12 +128,24 @@ router.post('/', (req, res, next) => {
                 res.status(500).json({
                     error: {message: qErr.sqlMessage}
                 })
+                return
             }
-            else {
-                res.status(200).json({
-                    message: 'produto cadastrado'
-                })
+
+            const response = {
+                message: "Produto inserido com sucesso",
+                createdNow: {
+                    id: result.id,
+                    descricao,
+                    preco,
+                    request: {
+                        tipo: "POST",
+                        descricao: "insere um produto",
+                        url: `${server_url}/produtos`
+                    }
+                }
             }
+
+            res.status(200).json(response)
         })
 
         conn.release()
@@ -136,17 +179,30 @@ router.put('/:id_produto', (req, res, next) => {
                     res.status(404).json({
                         error: {message: qErr.sqlMessage}
                     })
+                    return
                 }
-                else if (!result.changedRows) {
+
+                if (!result.changedRows) {
                     res.status(404).json({
                         error: {message: "Produto não encontrado"}
                     })
+                    return
                 }
-                else {
-                    res.status(200).json({
-                        message: "Produto atualizado com sucesso"
-                    })
+                    
+                const response = {
+                    produto: {
+                        id: idProduto,
+                        descricao: descricao,
+                        preco: preco,
+                        request: {
+                            tipo: "PUT",
+                            descricao: "Atualiza todas as informações de um produto",
+                            url: `${server_url}/produtos`
+                        }
+                    }
                 }
+
+                res.status(200).json(response)
             }
         )
 
@@ -157,13 +213,14 @@ router.put('/:id_produto', (req, res, next) => {
 router.delete('/:id_produto', (req, res, next) => {
     const idProduto = req.params.id_produto
 
+    
     if (!idProduto) {
         res.status(400).json({
             error: { message: 'Erro nos dados passados para a API'}
         })
         return
     }
-
+    
     pool.getConnection((err, conn) => {
         if (err) {
             res.status(417).json({
@@ -177,17 +234,19 @@ router.delete('/:id_produto', (req, res, next) => {
                 res.status(404).json({
                     error: {message: qErr.sqlMessage}
                 })
+                return
             }
-            else if (!result.changedRows) {
+            
+            if (!result.changedRows) {
                 res.status(404).json({
                     error: {message: "Produto não encontrado"}
                 })
+                return
             }
-            else {
-                res.status(410).json({
-                    message: 'Produto deletado com sucesso'
-                })
-            }
+            
+            res.status(410).json({
+                message: 'Produto deletado com sucesso'
+            })
         })
 
         conn.release()
